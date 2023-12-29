@@ -13,6 +13,7 @@ namespace BuildingSurveillanceSystemApplication
 
     public abstract class Observer : IObserver<ExternalVisitor>
     {
+        //
         IDisposable _cancellation;
         protected List<ExternalVisitor> _externalVisitors = new List<ExternalVisitor>();
 
