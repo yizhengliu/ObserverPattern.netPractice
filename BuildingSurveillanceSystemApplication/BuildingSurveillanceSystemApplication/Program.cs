@@ -8,6 +8,43 @@ namespace BuildingSurveillanceSystemApplication
     {
         static void Main(string[] args)
         {
+            Console.Clear();
+
+            SecuritySurveillanceHub securitySurveillanceHub = new SecuritySurveillanceHub();
+            EmployeeNotify employeeNotify = new EmployeeNotify(new Employee 
+            {
+                Id = 1,
+                FirstName = "Bob",
+                LastName = "Jone",
+                JobTitle = "Development Manager",
+            });
+
+            EmployeeNotify employeeNotify2 = new EmployeeNotify(new Employee
+            {
+                Id = 2,
+                FirstName = "Dave",
+                LastName = "Kendal",
+                JobTitle = "Chief Information Officer",
+            });
+
+            SecurityNotify securityNotify = new SecurityNotify();
+
+            employeeNotify.Subscribe(securitySurveillanceHub);
+            employeeNotify2.Subscribe(securitySurveillanceHub);
+            securityNotify.Subscribe(securitySurveillanceHub);
+
+
+            securitySurveillanceHub.ConfirmExternalVisiterEntersBuilding(1, "Andrew", "Jackson", "The Company", "Contractor", DateTime.Parse("29 Dec 2023 20:52"), 1);
+            securitySurveillanceHub.ConfirmExternalVisiterEntersBuilding(2, "Jane", "Davidson", "The Company", "Lawyer", DateTime.Parse("29 Dec 2023 21:52"), 2);
+
+            employeeNotify.Unsubscribe();
+
+            securitySurveillanceHub.ConfirmExternalVisitorExitsBuilding(1, DateTime.Parse("29 Dec 2023 22:52"));
+            securitySurveillanceHub.ConfirmExternalVisitorExitsBuilding(2, DateTime.Parse("29 Dec 2023 23:52"));
+
+            securitySurveillanceHub.BuildingEntryCutOffTimeReached();
+
+            Console.ReadKey();
         }
     }
 
@@ -71,7 +108,9 @@ namespace BuildingSurveillanceSystemApplication
             if (externalVistorListItem == null)
             {
                 _externalVisitors.Add(externalVisitor);
+                OutputFormatter.ChangeOutputTheme(OutputFormatter.TextOutputTheme.Security);
                 Console.WriteLine($"Security notificationL: VistorId({externalVisitor.Id}), First Name({externalVisitor.FirstName}), Last Name({externalVisitor.LastName}), entered the building, DateTime({externalVisitor.EntryTime.ToString("dd MMM yyyy hh:mm:ss")})");
+                OutputFormatter.ChangeOutputTheme(OutputFormatter.TextOutputTheme.Normal);
                 Console.WriteLine();
             }
             else 
@@ -86,7 +125,34 @@ namespace BuildingSurveillanceSystemApplication
             }
         }
     }
+    public static class OutputFormatter 
+    {
+        public enum TextOutputTheme 
+        {
+            Security, 
+            Employee,
+            Normal
+        }
 
+        public static void ChangeOutputTheme(TextOutputTheme textOutputTheme) 
+        {
+            if (textOutputTheme == TextOutputTheme.Employee)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkMagenta;
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else if (textOutputTheme == TextOutputTheme.Security)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkBlue;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+            }
+            else 
+            {
+                Console.ResetColor();
+            }
+        }
+
+    }
     public class Employee : IEmployee
     {
         public int Id { get; set ; }
@@ -148,7 +214,9 @@ namespace BuildingSurveillanceSystemApplication
                 if (externalVisitorListItem == null)
                 {
                     _externalVisitors.Add(externalVisitor);
+                    OutputFormatter.ChangeOutputTheme(OutputFormatter.TextOutputTheme.Employee);
                     Console.WriteLine($"{_employee.FirstName + " " + _employee.LastName}, your visitor has arrived. Visitor Id({externalVisitor.Id}), First Name({externalVisitor.FirstName}), Last Name({externalVisitor.LastName}), entered the building, DateTime({externalVisitor.EntryTime.ToString("dd MMM yyyy hh:mm:ss")})");
+                    OutputFormatter.ChangeOutputTheme(OutputFormatter.TextOutputTheme.Normal);
                     Console.WriteLine();
                 }
                 else 
@@ -164,7 +232,6 @@ namespace BuildingSurveillanceSystemApplication
         }
     }
 
-    //public class 
 
     public class Unsubscriber<ExternalVisitor> : IDisposable
     {
@@ -188,11 +255,15 @@ namespace BuildingSurveillanceSystemApplication
         private List<ExternalVisitor> _externalVisitors;
         private List<IObserver<ExternalVisitor>> _observers;
 
-
+        public SecuritySurveillanceHub() 
+        {
+            _externalVisitors = new List<ExternalVisitor>();
+            _observers = new List<IObserver<ExternalVisitor>>();
+        }
 
         public IDisposable Subscribe(IObserver<ExternalVisitor> observer)
         {
-            if (_observers.Contains(observer)) 
+            if (!_observers.Contains(observer)) 
             {
                 _observers.Add(observer);
             }
