@@ -8,6 +8,7 @@ namespace BuildingSurveillanceSystemApplication
     {
         static void Main(string[] args)
         {
+            /*
             Console.Clear();
 
             SecuritySurveillanceHub securitySurveillanceHub = new SecuritySurveillanceHub();
@@ -43,8 +44,66 @@ namespace BuildingSurveillanceSystemApplication
             securitySurveillanceHub.ConfirmExternalVisitorExitsBuilding(2, DateTime.Parse("29 Dec 2023 23:52"));
 
             securitySurveillanceHub.BuildingEntryCutOffTimeReached();
+            */
+
+            employee[] employees = { new employee { Id = 3, Name = "Bob" }, new employee { Id = 1, Name = "Ashe" } };
+            SortArray<employee> sortArray = new SortArray<employee>();
+            sortArray.BubblSort(employees);
+            foreach (employee employee in employees) 
+            {
+                Console.WriteLine(employee);
+            }
+
+            int[] ints = new int[] { 3,4,2,1};
+            SortArray<int> sortArray1 = new SortArray<int>();
+            sortArray1.BubblSort(ints);
+            foreach (int i in ints) 
+            {
+                Console.WriteLine(i);
+            }
 
             Console.ReadKey();
+        }
+    }
+
+    public class employee :IComparable<employee>
+    {
+        public int Id { set; get; }
+        public string Name { set; get; }
+
+        public int CompareTo(employee other)
+        {
+            return this.Id.CompareTo(other.Id);
+        }
+
+        /*public int CompareTo(object obj)
+        {
+            return this.Id.CompareTo(((employee)obj).Id);
+        }*/
+
+        public override string ToString()
+        {
+            return $"{Id} {Name}";
+        }
+    }
+
+    public class SortArray<T> where T : IComparable<T>
+    {
+        public void BubblSort(T[] array) 
+        {
+            for (int i = 0; i < array.Length - 1; i++)
+                for (int j = 0; j < array.Length - 1; j++)
+                    if (array[j].CompareTo(array[j + 1]) > 0) 
+                    {
+                        Swap(array, j);
+                    }
+        }
+
+        private void Swap(T[] array, int index) 
+        {
+            T temp = array[index];
+            array[index] = array[index + 1];
+            array[index + 1] = temp;
         }
     }
 
